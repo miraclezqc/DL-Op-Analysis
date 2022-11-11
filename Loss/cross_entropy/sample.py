@@ -29,7 +29,8 @@ def get_sample_config():
 def gen_np_args(input_, target_, weight_,
             size_average_, ignore_index_, reduce_, reduction_, label_smoothing_):
     input = np.random.random(input_).astype(np.float32)
-    target = np.random.randint(5, size=target_)
+    assert input_[1] > 0, "reduce size can not < 0"
+    target = np.random.randint(input_[1], size=target_)
 
     return [input, target, weight_,
             size_average_, ignore_index_, reduce_, reduction_, label_smoothing_]
@@ -75,9 +76,11 @@ def get_input_data():
         arg_data = json.load(f)
     arg_data_length = len(arg_data["input"])
     in_sizes = []
+    reduce_sizes = []
     for i in range(arg_data_length):
         in_size = 1
         for dim in arg_data["input"][i]:
             in_size *= dim
         in_sizes.append(in_size)
-        
+    return in_sizes
+    
