@@ -76,11 +76,12 @@ def get_input_data():
         arg_data = json.load(f)
     arg_data_length = len(arg_data["input"])
     in_sizes = []
-    reduce_sizes = []
+    label_sizes = []
     for i in range(arg_data_length):
         in_size = 1
         for dim in arg_data["input"][i]:
             in_size *= dim
         in_sizes.append(in_size)
-    return in_sizes
+        label_sizes.append(arg_data["input"][i][1])
+    return in_sizes, label_sizes
     
