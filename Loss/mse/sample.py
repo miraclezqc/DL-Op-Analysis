@@ -55,7 +55,7 @@ def get_input_data():
     in_sizes = []
     for i in range(arg_data_length):
         in_size = 1
-        for dim in arg_data["input"][i]:
+        for dim in arg_data["x1"][i]:
             in_size *= dim
         in_sizes.append(in_size)
     return in_sizes
