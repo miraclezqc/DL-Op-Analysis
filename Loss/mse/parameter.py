@@ -30,8 +30,6 @@ for col in range(column):
 print(mem_dict)
 # count the range data
 for in_data in input_mem_data:
-    # print(int(np.floor(in_data/step)))
-    # print(in_data)
     mem_dict[label_data[int(np.floor(in_data/step))]] += 1
 
 print(mem_dict)

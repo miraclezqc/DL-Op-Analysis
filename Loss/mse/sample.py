@@ -59,4 +59,48 @@ def get_input_data():
             in_size *= dim
         in_sizes.append(in_size)
     return in_sizes
-    
+
+def get_dedu_input_data():
+    with open("./mse_loss_dedu.json", "r") as f:
+        arg_data = json.load(f)
+    arg_data_length = len(arg_data["x1"])
+    in_sizes = []
+    for i in range(arg_data_length):
+        in_size = 1
+        for dim in arg_data["x1"][i]:
+            in_size *= dim
+        in_sizes.append(in_size)
+    return in_sizes
+
+def get_dedu_input_info():
+    with open("./mse_loss_dedu.json", "r") as f:
+        arg_data = json.load(f)
+    arg_data_length = len(arg_data["x1"])
+    in_infos = []
+    for i in range(arg_data_length):
+        in_info = str(arg_data["x1"][i][0])
+        for dim in range(len(arg_data["x1"][i])-1):
+            in_info += "x" + str(arg_data["x1"][i][dim+1])
+        in_infos.append(in_info)
+    return in_infos
+
+def get_vritual_input_data():
+    with open("./mse_loss_vritual.json", "r") as f:
+        arg_data = json.load(f)
+    arg_data_length = len(arg_data["x1"])
+    in_sizes = []
+    for i in range(arg_data_length):
+        in_size = 1
+        for dim in arg_data["x1"][i]:
+            in_size *= dim[0] # List
+        in_sizes.append(in_size)
+    return in_sizes
+
+def get_vritual_input_info():
+    with open("./mse_loss_vritual.json", "r") as f:
+        arg_data = json.load(f)
+    arg_data_length = len(arg_data["x1"])
+    in_infos = []
+    for i in range(arg_data_length):
+        in_infos.append("2^"+str(i+1))
+    return in_infos

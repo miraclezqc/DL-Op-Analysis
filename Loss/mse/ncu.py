@@ -2,24 +2,28 @@ import os
 import numpy as np
 import pandas as pd
 import collections
-# from roofline import roofline
 import json
 import csv
 from sample import *
 
 datadir='.'
-files=[x for x in os.listdir(datadir) if x.endswith('nsight.csv')]
+end = 'mse_loss_nsight.csv'
+# end = 'vritual_nsight.csv'
+files=[x for x in os.listdir(datadir) if x.endswith(end)]
 files.sort()
 files=[os.path.join(datadir,file) for file in files]
 dfs={}
 
 
-repeat_number = pd.read_csv(open("cross_entropy_repeat_number.csv"))
+repeat_number = pd.read_csv(open("mse_loss_repeat_number.csv"))
+# repeat_number = pd.read_csv(open("mse_loss_vritual_repeat_number.csv"))
 ALL_NUMBER = np.sum(repeat_number.values)
 NUM_Metrics = 21
 NUM_DEDU = len(repeat_number.values)
 
-with open("cross_entropy_dedu.json", 'r') as f:
+
+with open("mse_loss_dedu.json", 'r') as f:
+# with open("mse_loss_vritual.json", 'r') as f:
     shape_dict = json.load(f)
 
 for file in files:
@@ -79,8 +83,7 @@ for file in files:
          }
         
         cur_line = 0
-        kernel_keys = "softmax"
-        # kernel_keys = "nll_loss"
+        kernel_keys = "mse_kernel_cuda"
         k_start = False
         for index, kernel in dfmetric.iterrows():
             if kernel_keys in kernel['Kernel Name'].lower():
@@ -89,16 +92,6 @@ for file in files:
                     for i in range(cur_line, cur_line+1):
                         curnum += float(dfmetric[df_list[j]][i])
                     df_dict[df_list[j]].append(curnum)
-            # ----------------------------
-            # if "softmax" in kernel['Kernel Name'].lower():
-            #     k_start = True
-            # elif kernel_keys in kernel['Kernel Name'].lower() and k_start == True:
-            #     for j in range(len(df_list)):
-            #         curnum = 0.0
-            #         for i in range(cur_line, cur_line+1):
-            #             curnum += float(dfmetric[df_list[j]][i])
-            #         df_dict[df_list[j]].append(curnum)
-            #     k_start = False
             cur_line += 1
 
         assert len(df_dict['Time']) == NUM_DEDU
@@ -140,21 +133,20 @@ for file in files:
         dfmetric['TC GFLOP/s'] = dfmetric['TC FLOPs']/ dfmetric['Time'] /1024/1024/1024
 
         # print(dfmetric['AI L2'].values)
-        print(np.sum(dfmetric['AI L2'].values) / len(dfmetric['AI L2'].values))
+        # print(np.sum(dfmetric['AI L2'].values) / len(dfmetric['AI L2'].values))
         dfmetric.to_csv('pd.csv')
         dfs[tag]=dfmetric
 
         in_infos = get_dedu_input_info()
-        sizes,_  = get_dedu_input_data()
-        # in_infos = get_dedu_target_info()
-        # sizes = get_dedu_target_data()
+        sizes  = get_dedu_input_data()
+        # in_infos = get_vritual_input_info()
+        # sizes  = get_vritual_input_data()
 
         # DEDU
         in_size_utilzation_dict = collections.OrderedDict()
         for idx, in_size in enumerate(sizes):
             in_size_utilzation_dict[in_size] = [dfmetric['gpu__compute_memory_throughput.avg.pct_of_peak_sustained_elapsed'].values[idx], in_infos[idx]]
         in_size_utilzation_dict = collections.OrderedDict(sorted(in_size_utilzation_dict.items()))
-        print(in_size_utilzation_dict)
 
         utilization_range_dict = {}
         # init
@@ -194,37 +186,32 @@ for file in files:
         axis.set_ylabel('Memory Utilization(%)', fontsize=10)
         data = list( i[0] for i in in_size_utilzation_dict.values())
         names = list( i[1] for i in in_size_utilzation_dict.values())
-
         axis.bar(names, data, color=colors)
-        axis.set_title('Memory Utilization of SoftMax Function with Different Parameters'
+        axis.set_title('Memory Utilization of MSE Loss Function with Different Parameters'
                     , fontsize=title_size)
-        # axis.set_title('Memory Utiliation of NLL Loss Function with Different Parameters'
-        #             , fontsize=title_size)
         axis.tick_params(axis='x', labelsize=fontsize_tune)
         axis.tick_params(axis='y', labelsize=fontsize_tune)
         axis.set_xticks(range(0,len(names),1))
         axis.set_xticklabels(names,rotation=70)
-        plt.savefig('cross_entropy_memory_utilization.png',dpi=800)
-
-
+        plt.savefig('mse_loss_memory_utilization.png',dpi=800)
 
         ########################## the 2nd plt ################################
         fig, axes = plt.subplots(nrows=allrown, ncols=1, figsize=(8,4*allrown))
         
         ax0 = axes
         axis = ax0
-        axis.set_ylabel('Ratio(%)', fontsize=10)
-        # data = 
+        axis.set_ylabel('Ratio(%)', fontsize=10) 
         names = list(utilization_range_dict.keys())
         data = list(utilization_range_dict.values())
 
+        for x,y in zip(np.arange(len(names)),data):
+            plt.text(x+0.05,y+0.05,'%.4f' %y, ha='center',va='bottom', fontdict={"size":4})
+
         axis.bar(names, data, color=colors)
-        axis.set_title('Memory Utilization of SoftMax Function with Different Parameters'
+        axis.set_title('Memory Utilization of MSE Loss Function with Different Parameters'
                     , fontsize=title_size)
-        # axis.set_title('Distribution of Memory Utiliation with NLL Loss Function'
-        #             , fontsize=title_size)
         axis.tick_params(axis='x', labelsize=fontsize_tune)
         axis.tick_params(axis='y', labelsize=fontsize_tune)
         axis.set_xticks(range(0,len(names),1))
         axis.set_xticklabels(names,rotation=70)
-        plt.savefig('cross_entropy_utilization_distribution.png',dpi=800)
+        plt.savefig('mse_loss_utilization_distribution.png',dpi=800)
