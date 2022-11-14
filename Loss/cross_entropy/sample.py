@@ -57,7 +57,7 @@ def args_adaptor(np_args):
             size_average_ = np_args[3] #TODO maybe list
     if np_args[4] != "":
         if not argIsNone(np_args[4]):
-            ignore_index_ = np_args[4] #TODO maybe list
+            ignore_index_ = np_args[4][0][0] #TODO maybe list
     if np_args[5] != "":
         if not argIsNone(np_args[5]):
             reduce_ = np_args[5] #TODO maybe list
